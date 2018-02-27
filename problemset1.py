@@ -11,6 +11,8 @@ english_vocab = set(w.lower() for w in nltk.corpus.words.words())
 
 ### Part (a) ###
 
+print("\n ===== Problem 2a ===== \n")
+
 word_length = 12
 possible_words = set()
 
@@ -29,6 +31,8 @@ def xor_lists_byte_strings(a,b):
 
 c1_xor_c2 = xor_lists_byte_strings(a,b)
 
+print ("Possible Word Combinations:")
+# find m1 xor'ed with c1 xor c_2, and check if the result is a m2 in the possible word set
 for m1 in possible_words:
     m1_as_int = [ord(c) for c in m1]
     m2_as_int = []
@@ -40,10 +44,14 @@ for m1 in possible_words:
 
 ### Part (d) ###
 
+print("\n ===== Problem 2d ===== \n")
+
 g = {}
 
+#helper dictionary to help index g table/function
 hex_dict = {0:'0', 1:'1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9', 10:'a', 11:'b', 12:'c', 13:'d', 14:'e', 15:'f'}
 
+#create g function dictionary lookup table
 with open('gbox.txt') as f:
     row = 0
     col = 0
@@ -54,12 +62,17 @@ with open('gbox.txt') as f:
             col += 1
         row += 1
 
+#compute inverse table for inverse g function
 inv_g = {v: k for k, v in g.items()}
 
+#the 100 printable ASCII characters
 printable_characters = set(string.printable)
 
-def find_pads():
+
+# finds the pads for the given problem, in this case there was only one possible pad with the constraints
+def find_pads(printable_characters, g, inv_g):
     pad_length = 0
+    # get length of pad/ messages
     with open('10ciphs.txt') as f:
         for line in f:
             pad_length = len(line.split())
@@ -77,6 +90,7 @@ def find_pads():
                     prev_c = char_list[i-1]
                 pads_to_remove = set()
                 for p in possible_pad_i:
+                    # perform reverse of calculation in 2b
                     key = format(int(c,16) ^ p, '02x')
                     char = chr(int(inv_g[key],16)^ int(prev_c,16))
                     if char not in printable_characters:
@@ -92,15 +106,23 @@ def find_pads():
 
     return pad_list_int
 
-pad_list_int = find_pads()
+pad_list_int = find_pads(printable_characters, g, inv_g)
 
 lines = []
 with open('10ciphs.txt') as f:
     for line in f:
         lines.append(line.split())
 
+print ("Pad used:")
+pad = [format(i,'02x') for i in pad_list_int]
+out = ''
+for i in pad:
+    out += i
+    out += ' '
+print(out[:-1])
 
 #Decryption of the message
+print ("\nDecrypted Message:\n")
 for c in lines:
     msg_length = len(c)
     msg = ''
@@ -109,6 +131,7 @@ for c in lines:
             prev_c = '00'
         else:
             prev_c = c[i-1]
+        # decryption - same process as in 2b
         key = format(int(c[i],16) ^ pad_list_int[i], '02x')
         char = chr(int(inv_g[key],16)^ int(prev_c,16))
         msg += char
